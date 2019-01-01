@@ -5,8 +5,10 @@ session_start();
  */
 require 'helpers/helper.php';
 
+// errors bag
+
 
 spl_autoload_register(function ($class){
-    include 'classes/'.$class.'.php';
+    include_once 'classes/'.$class.'.php';
 });
 

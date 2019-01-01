@@ -1,48 +1,83 @@
-<?php require 'bootstrap/init.php'; ?>
+<?php include_once 'bootstrap/init.php'; ?>
 
 <?php
+    if(isset($_SESSION['auth'])){
+        header('location: index.php');
+    }
 /**
  * login attempte!
  */
+$errors = [];
 if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
-    // validate fields
-    
-    // test token match
-    if($_SESSION['_token'] == $_POST['_token']){
-       
-    }else{
-        
-    }
-    // test user in database
 
-    // redirect to home if user or dashboard if admin
+    if($_SESSION['_token'] != $_POST['_token']){
+        $errors['_token'] = "token miss match";
+    }
+    // validate fields
+    if(!Validation::required($_POST['login'])){
+        $errors['login'] = "login not validated";
+    }
+    if($_POST["password"]==""){
+        $errors['password'] = "password required";
+    }
+    if (count($errors)==0) {
+        $pdo = Database::getConnection();
+        $user = new User($pdo);
+        $user = $user->login($_POST['login'],$_POST["password"]);
+        // test user in database
+        if(count($user)>0){
+            $_SESSION['auth'] = $user;
+            if($user[0]['login']!='admin')
+                header('location: index.php');
+            else
+                header('location: dashboard.php');
+        }else{
+            $errors['login'] = "login or password not validated";
+        }
+       
+
+    }
+
+
+
 
 }
 ?>
 
 
-<?php get_header(); ?>
+ <?php get_header(); ?>
 
-
+        <?php if(isset($errors['_token'])) : ?>
+        <?php token_error($errors['_token']); ?>
+        <?php endif; ?>
 
   <div class="row">
-    <div class="col-md-4 offset-md-4">
+    <div class="offset-sm-3 offset-md-4 col-md-4 col-sm-6 ">
+
         <form action="" method="post" class="">
 
             <div class="form-group">
                 <label for="exampleInputEmail1">Login</label>
-                <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter login">
-                <small id="emailHelp" class="form-text text-danger">User with this login is not found or passsword incorrect.</small>
+                <input type="text" class="form-control" name="login" placeholder="Enter login" value="<?= @$_POST['login']?>">
+                <?php if(isset($errors['login'])) : ?>
+                <small id="emailHelp" class="form-text text-danger"><?=$errors['login']?></small>
+                <?php endif; ?>
+
             </div>
+
             <div class="form-group">
                 <label for="exampleInputPassword1">Password</label>
-                <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+                <input type="password" class="form-control" name="password" placeholder="Password">
+                <?php if(isset($errors['password'])) : ?>
+                <small class="form-text text-danger"><?=$errors['password']?></small>
+                <?php endif; ?>
             </div>
-            <input type="text" name="_token" value="<?=$_SESSION['_token']?>">
 
-            <button type="submit" class="btn btn-primary">Login</button>
+            <input type="hidden" name="_token" value="<?=$_SESSION['_token']?>">
 
+            <button type="submit" class="btn btn-primary">Login</button><br>
+            <a href="register.php">create a new acount</a>
         </form>
     </div>
   </div>

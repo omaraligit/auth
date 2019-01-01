@@ -3,7 +3,9 @@
 <?php get_header(); ?>
 
 
-    <h1>Hello, world!</h1>
+    <div class="container text-center">
+        <h1>Hello, <?=$_SESSION['auth'][0]['nom']  ?>!</h1>
+    </div>
 
 
 <?php get_footer(); ?>
